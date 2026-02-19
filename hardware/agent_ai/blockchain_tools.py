@@ -98,18 +98,57 @@ def execute_new_order():
 
 # Function to complete an order as a provider
 @tool("complete_order_provider", return_direct=True)
-def complete_order_provider(order_id):
-    """Complete an order as a provider.
+def complete_order_provider(order_id, agent_id=None):
+    """Complete an order as a provider with ERC-8004 feedback authorization.
 
     Args:
-        order_id (_type_): _description_
+        order_id (str): Order ID (Ethereum address) to be completed
+        agent_id (int, optional): ERC-8004 agent ID. If not provided, uses environment variable ERC8004_AGENT_ID
     """
     checksum_order_id = web3.to_checksum_address(order_id)
+    
     try:
+        # Get order details to find customer address
+        order = contract.functions.orders(checksum_order_id).call()
+        customer_address = order[2]  # customerId is the 3rd field in the Order struct
+        
+        if customer_address == "0x0000000000000000000000000000000000000000":
+            return f"❌ Order {checksum_order_id} not found or invalid"
+        
+        # Get agent ID from parameter or environment
+        erc8004_agent_id = agent_id or os.getenv("ERC8004_AGENT_ID")
+        if not erc8004_agent_id:
+            return "❌ ERC-8004 agent ID not provided. Use agent_id parameter or set ERC8004_AGENT_ID env variable"
+        
+        erc8004_agent_id = int(erc8004_agent_id)
+        
+        # Create feedback authorization
+        print(f"🔐 Creating feedback authorization for customer: {customer_address}")
+        
+        # Initialize ERC8004 client
+        client = ERC8004Client(private_key=private_key)
+        
+        # Get the last feedback index for this customer
+        last_index = client.reputation_registry.functions.getLastIndex(
+            erc8004_agent_id,
+            web3.to_checksum_address(customer_address)
+        ).call()
+        
+        # Create feedback authorization for next feedback (last_index + 1)
+        feedback_auth = client.create_feedback_auth(
+            agent_id=erc8004_agent_id,
+            client_address=customer_address,
+            index_limit=last_index + 1,
+            expiry_hours=168  # 1 week expiry
+        )
+        
+        print(f"✅ Feedback authorization created for index {last_index + 1}")
+        
+        # Complete order with feedback authorization
         nonce = web3.eth.get_transaction_count(printer_address)
-        tx = contract.functions.completeOrderProvider(checksum_order_id).build_transaction({
+        tx = contract.functions.completeOrderProvider(checksum_order_id, feedback_auth).build_transaction({
             'from': printer_address,
-            'gas': 200000,
+            'gas': 300000,  # Increased gas limit for additional operations
             'gasPrice': web3.eth.gas_price,
             'nonce': nonce
         })
@@ -117,10 +156,26 @@ def complete_order_provider(order_id):
         signed_tx = web3.eth.account.sign_transaction(tx, private_key)
         tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
-        print(f"✅ Order {checksum_order_id} completed! Transaction hash: {web3.to_hex(tx_hash)}")
+        print(f"✅ Order {checksum_order_id} completed with feedback authorization! Transaction hash: {web3.to_hex(tx_hash)}")
+        
+        # Return feedback auth info for customer
+        feedback_auth_hex = "0x" + feedback_auth.hex()
+        return f"""
+Order completed successfully!
+Order ID: {checksum_order_id}
+Customer: {customer_address}
+Agent ID: {erc8004_agent_id}
+Transaction: {web3.to_hex(tx_hash)}
+
+Feedback Authorization for Customer:
+{feedback_auth_hex}
+
+The customer can now submit feedback using this authorization on ERC-8004!
+"""
 
     except Exception as e:
         print(f"❌ Error completing order {checksum_order_id}: {e}")
+        return f"❌ Error completing order {checksum_order_id}: {e}"
 
 # Function to transfer funds to the provider
 @tool("transfer_funds_provider", return_direct=True)

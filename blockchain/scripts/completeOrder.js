@@ -49,9 +49,13 @@ async function main() {
         if (isSigned && !isCompletedProvider && startTime != 0 && currentTime <= completionDeadline) {
             console.log(`🚀 Marking order as completed...`);
             try {
-                const tx = await formicarium.connect(printer).completeOrderProvider(orderId);
+                // Create a dummy feedbackAuth for demonstration
+                // In a real scenario, this would be properly generated according to ERC-8004 spec
+                const feedbackAuth = hre.ethers.toUtf8Bytes("dummy-feedback-auth-placeholder");
+                
+                const tx = await formicarium.connect(printer).completeOrderProvider(orderId, feedbackAuth);
                 await tx.wait();
-                console.log(`✅ Order ${orderId} successfully marked as completed!`);
+                console.log(`✅ Order ${orderId} successfully marked as completed with feedbackAuth!`);
             } catch (error) {
                 console.error(`❌ Failed to complete order ${orderId}:`, error.message);
             }

@@ -30,11 +30,13 @@ const IDENTITY_REGISTRY_ABI = [
 ];
 
 async function main() {
-    const agentPrivateKey = process.env.PRIVATE_KEY;
+    
+    // Use PRIVATE_KEY for hardware agent, PRIVATE_KEY2 for design agent
+    const agentPrivateKey = agentType === "design" ? process.env.PRIVATE_KEY2 : process.env.PRIVATE_KEY;
     const agentType = process.argv[2] || "hardware"; // hardware or design
 
     if (!agentPrivateKey) {
-        throw new Error("PRIVATE_KEY is missing in .env file");
+        throw new Error(`${agentType === "design" ? "PRIVATE_KEY2" : "PRIVATE_KEY"} is missing in .env file`);
     }
 
     // Connect to Base Sepolia

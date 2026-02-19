@@ -73,7 +73,8 @@ describe("Advanced Formicarium Tests", function () {
     await formicarium.connect(printer).executeNewOrder();
 
     // Complete order
-    await formicarium.connect(printer).completeOrderProvider(orderId);
+    const feedbackAuth = hre.ethers.toUtf8Bytes("test-feedback-auth");
+    await formicarium.connect(printer).completeOrderProvider(orderId, feedbackAuth);
 
     // Customer reports the order as uncompleted
     await formicarium.connect(customer).reportUncompleteOrder(orderId);
@@ -117,7 +118,8 @@ describe("Advanced Formicarium Tests", function () {
     // Sign, execute, and complete order
     await formicarium.connect(printer).signOrder(orderId);
     await formicarium.connect(printer).executeNewOrder();
-    await formicarium.connect(printer).completeOrderProvider(orderId);
+    const feedbackAuth = hre.ethers.toUtf8Bytes("test-feedback-auth");
+    await formicarium.connect(printer).completeOrderProvider(orderId, feedbackAuth);
 
     // Attempt to refund (should fail)
     await expect(formicarium.connect(customer).refundOrderRequest(orderId)).to.be.revertedWith("Order request already signed");
@@ -154,7 +156,8 @@ describe("Advanced Formicarium Tests", function () {
     // Sign, execute, and complete order
     await formicarium.connect(printer).signOrder(orderId);
     await formicarium.connect(printer).executeNewOrder();
-    await formicarium.connect(printer).completeOrderProvider(orderId);
+    const feedbackAuth = hre.ethers.toUtf8Bytes("test-feedback-auth");
+    await formicarium.connect(printer).completeOrderProvider(orderId, feedbackAuth);
 
     // Fast forward time beyond reporting period
     await hre.network.provider.send("evm_increaseTime", [3600 + 300]); // +5 minutes buffer
@@ -209,9 +212,24 @@ describe("Advanced Formicarium Tests", function () {
     await formicarium.connect(customer).createOrder(orderId, printer.address, orderPrice, orderPrice, 3600);
     await formicarium.connect(printer).signOrder(orderId);
     await formicarium.connect(printer).executeNewOrder();
-    await expect(formicarium.connect(printer).completeOrderProvider(orderId))
+    const feedbackAuth = hre.ethers.toUtf8Bytes("test-feedback-auth");
+    await expect(formicarium.connect(printer).completeOrderProvider(orderId, feedbackAuth))
       .to.emit(formicarium, "OrderCompleted")
       .withArgs(orderId, printer.address);
+  });
+
+  it("Should emit FeedbackAuthStored event", async function () {
+    await formicarium.connect(printer).registerPrinter("Printer 1");
+    const orderId = hre.ethers.Wallet.createRandom().address;
+    const orderPrice = hre.ethers.parseEther("10");
+    await paymentToken.connect(customer).approve(formicarium.target, orderPrice);
+    await formicarium.connect(customer).createOrder(orderId, printer.address, orderPrice, orderPrice, 3600);
+    await formicarium.connect(printer).signOrder(orderId);
+    await formicarium.connect(printer).executeNewOrder();
+    const feedbackAuth = hre.ethers.toUtf8Bytes("test-feedback-auth");
+    await expect(formicarium.connect(printer).completeOrderProvider(orderId, feedbackAuth))
+      .to.emit(formicarium, "FeedbackAuthStored")
+      .withArgs(orderId, printer.address, customer.address);
   });
 
   it("Should return all orders placed by the customer", async function () {

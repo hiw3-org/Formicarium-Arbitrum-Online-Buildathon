@@ -130,12 +130,75 @@ describe("Formicarium", function () {
     // Wait half an hour
     await hre.network.provider.send("evm_increaseTime", [1800]);
 
-    // Complete order
-    await formicarium.connect(printer).completeOrderProvider(orderId);
+    // Complete order with feedbackAuth
+    const feedbackAuth = hre.ethers.toUtf8Bytes("test-feedback-auth");
+    await formicarium.connect(printer).completeOrderProvider(orderId, feedbackAuth);
 
     // Verify order completion
     const order = await formicarium.orders(orderId);
     expect(order.isCompletedProvider).to.be.true;
+  });
+
+  it("Should store and retrieve feedbackAuth", async function () {
+    // Register printer
+    await formicarium.connect(printer).registerPrinter("Printer 1");
+
+    // Approve tokens
+    const orderPrice = hre.ethers.parseEther("10");
+    await paymentToken.connect(customer).approve(formicarium.target, orderPrice);
+
+    // Create order
+    const orderId = hre.ethers.Wallet.createRandom().address;
+    await formicarium.connect(customer).createOrder(orderId, printer.address, orderPrice, orderPrice, 3600);
+
+    // Sign order
+    await formicarium.connect(printer).signOrder(orderId);
+
+    // Execute order
+    await formicarium.connect(printer).executeNewOrder()
+
+    // Wait half an hour
+    await hre.network.provider.send("evm_increaseTime", [1800]);
+
+    // Complete order with feedbackAuth
+    const feedbackAuthData = "test-feedback-auth-for-erc8004";
+    const feedbackAuth = hre.ethers.toUtf8Bytes(feedbackAuthData);
+    await formicarium.connect(printer).completeOrderProvider(orderId, feedbackAuth);
+
+    // Verify feedbackAuth is stored
+    expect(await formicarium.hasFeedbackAuth(orderId)).to.be.true;
+    
+    // Retrieve and verify feedbackAuth content
+    const storedFeedbackAuth = await formicarium.getFeedbackAuth(orderId);
+    expect(hre.ethers.toUtf8String(storedFeedbackAuth)).to.equal(feedbackAuthData);
+  });
+
+  it("Should reject completion with empty feedbackAuth", async function () {
+    // Register printer
+    await formicarium.connect(printer).registerPrinter("Printer 1");
+
+    // Approve tokens
+    const orderPrice = hre.ethers.parseEther("10");
+    await paymentToken.connect(customer).approve(formicarium.target, orderPrice);
+
+    // Create order
+    const orderId = hre.ethers.Wallet.createRandom().address;
+    await formicarium.connect(customer).createOrder(orderId, printer.address, orderPrice, orderPrice, 3600);
+
+    // Sign order
+    await formicarium.connect(printer).signOrder(orderId);
+
+    // Execute order
+    await formicarium.connect(printer).executeNewOrder()
+
+    // Wait half an hour
+    await hre.network.provider.send("evm_increaseTime", [1800]);
+
+    // Try to complete order with empty feedbackAuth - should fail
+    const emptyFeedbackAuth = "0x";
+    await expect(
+      formicarium.connect(printer).completeOrderProvider(orderId, emptyFeedbackAuth)
+    ).to.be.revertedWith("FeedbackAuth cannot be empty");
   });
 
   it("Should allow refund of expired order", async function () {
@@ -187,8 +250,9 @@ describe("Formicarium", function () {
     // Wait half an hour
     await hre.network.provider.send("evm_increaseTime", [1800]);
 
-    // Complete order
-    await formicarium.connect(printer).completeOrderProvider(orderId);
+    // Complete order with feedbackAuth
+    const feedbackAuth = hre.ethers.toUtf8Bytes("test-feedback-auth");
+    await formicarium.connect(printer).completeOrderProvider(orderId, feedbackAuth);
 
     // Fast forward time beyond order duration + 5 min
     await hre.network.provider.send("evm_increaseTime", [1800 + 360]);

@@ -27,6 +27,7 @@ contract Formicarium {
         bool isSigned;
         bool isCompletedProvider;
         bool isUncompleteCustomer;
+        bytes feedbackAuth; // ERC-8004 feedbackAuth for reputation feedback
     }
     address[] public printerAddresses;    
 
@@ -60,6 +61,7 @@ contract Formicarium {
     event OrderSigned(address indexed orderId, address indexed printerId);
     event OrderStarted(address indexed orderId, address indexed printerId);
     event OrderCompleted(address indexed orderId, address indexed printerId);
+    event FeedbackAuthStored(address indexed orderId, address indexed printerId, address indexed customerId);
 
     // Functions
 
@@ -109,6 +111,26 @@ contract Formicarium {
         return customerOrders;
     }
 
+    /**
+     * @dev Retrieves the ERC-8004 feedbackAuth for a specific order
+     * @param _orderId The ID of the order
+     * @return The feedbackAuth bytes data for reputation feedback
+     */
+    function getFeedbackAuth(address _orderId) public view returns (bytes memory) {
+        require(orders[_orderId].ID == _orderId, "Order does not exist");
+        return orders[_orderId].feedbackAuth;
+    }
+
+    /**
+     * @dev Checks if an order has feedbackAuth stored
+     * @param _orderId The ID of the order
+     * @return True if feedbackAuth is stored, false otherwise
+     */
+    function hasFeedbackAuth(address _orderId) public view returns (bool) {
+        require(orders[_orderId].ID == _orderId, "Order does not exist");
+        return orders[_orderId].feedbackAuth.length > 0;
+    }
+
     // Setter functions
 
     function registerPrinter(string memory _printerDetails) public {
@@ -135,7 +157,7 @@ contract Formicarium {
         // remove expired orders
         removeExpiredOrders(_printerId);
 
-        orders[_orderId] = Order(_orderId, _printerId, msg.sender, _minimalPrice, _actualPrice, _duration, 0, block.timestamp + 5 minutes, false, false, false);
+        orders[_orderId] = Order(_orderId, _printerId, msg.sender, _minimalPrice, _actualPrice, _duration, 0, block.timestamp + 5 minutes, false, false, false, "");
         providerOrders[_printerId].push(_orderId);
 
         emit OrderCreated(_orderId, _printerId, _minimalPrice, _actualPrice, _duration);
@@ -227,15 +249,31 @@ contract Formicarium {
         emit OrderStarted(_orderId, msg.sender);
     }
 
-    function completeOrderProvider(address _orderId) public onlyPrinter {
+    /**
+     * @dev Completes an order by the service provider and stores ERC-8004 feedbackAuth
+     * @param _orderId The ID of the order to complete
+     * @param _feedbackAuth The ERC-8004 feedbackAuth bytes for reputation feedback
+     * Requirements:
+     * - Only the service provider can call this function
+     * - Order must exist, be signed, and started
+     * - Order must not be already completed
+     * - Must be within the order duration
+     * - FeedbackAuth cannot be empty
+     */
+    function completeOrderProvider(address _orderId, bytes memory _feedbackAuth) public onlyPrinter {
         require(orders[_orderId].ID == _orderId, "Order does not exist");
         require(orders[_orderId].printerId == msg.sender, "Only service provider can complete order");
         require(orders[_orderId].isSigned, "Order not signed");
         require(orders[_orderId].startTime != 0, "Order not started");
         require(!orders[_orderId].isCompletedProvider, "Order already completed");
         require(block.timestamp < orders[_orderId].startTime + orders[_orderId].duration, "Order duration expired");
-        orders[_orderId].isCompletedProvider = true;   
-        emit OrderCompleted(_orderId, msg.sender);     
+        require(_feedbackAuth.length > 0, "FeedbackAuth cannot be empty");
+        
+        orders[_orderId].isCompletedProvider = true;
+        orders[_orderId].feedbackAuth = _feedbackAuth;
+        
+        emit OrderCompleted(_orderId, msg.sender);
+        emit FeedbackAuthStored(_orderId, msg.sender, orders[_orderId].customerId);
     }
 
     function reportUncompleteOrder(address _orderId) public {
