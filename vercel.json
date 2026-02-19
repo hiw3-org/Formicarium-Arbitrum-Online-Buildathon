@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd frontend/shadcn-nextjs-boilerplate && npm run build",
+  "outputDirectory": "frontend/shadcn-nextjs-boilerplate/.next",
+  "installCommand": "cd frontend/shadcn-nextjs-boilerplate && npm install",
+  "framework": "nextjs"
+}
