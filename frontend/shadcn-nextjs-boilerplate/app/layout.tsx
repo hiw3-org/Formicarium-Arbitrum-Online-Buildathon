@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <title>
-          Formicarium - Autonomous 3D Printing Service
+          Formicarium - Decentralized Autonomous 3D Printing Service
         </title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {/* <!--  Social tags   --> */}
