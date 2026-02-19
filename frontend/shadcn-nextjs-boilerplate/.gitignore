@@ -47,7 +47,7 @@ package-lock.json
 .env.local.new
 .env.local.non-docker
 
-components/ui
+
 
 yarn.lock
 
