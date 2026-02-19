@@ -10,8 +10,8 @@ import {
   AccordionTrigger
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import Bgdark from '@/public/img/dark/ai-chat/bg-image.png';
-import Bg from '@/public/img/light/ai-chat/bg-image.png';
+import Bgdark from '/img/dark/ai-chat/bg-image.png';
+import Bg from '/img/light/ai-chat/bg-image.png';
 import { ChatBody, OpenAIModel } from '@/types/types';
 import { User } from '@supabase/supabase-js';
 import { useTheme } from 'next-themes';
