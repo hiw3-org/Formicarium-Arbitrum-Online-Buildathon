@@ -7,6 +7,7 @@ import { PropsWithChildren, useEffect, useState } from 'react';
 import { FaChevronLeft } from 'react-icons/fa6';
 import { HiBolt } from 'react-icons/hi2';
 import { IoMoon, IoSunny } from 'react-icons/io5';
+import Link from 'next/link';
 
 interface DefaultAuthLayoutProps extends PropsWithChildren {
   children: JSX.Element;
@@ -27,14 +28,14 @@ export default function DefaultAuthLayout(props: DefaultAuthLayoutProps) {
   return (
     <div className="relative h-max dark:bg-zinc-950">
       <div className="mx-auto flex w-full flex-col justify-center px-5 pt-0 md:h-[unset] md:max-w-[66%] lg:h-[100vh] lg:max-w-[66%] lg:px-6 xl:pl-0 ">
-        <a className="mt-10 w-fit text-zinc-950 dark:text-white" href="/">
+        <Link className="mt-10 w-fit text-zinc-950 dark:text-white" href="/">
           <div className="flex w-fit items-center lg:pl-0 lg:pt-0 xl:pt-0">
             <FaChevronLeft className="mr-3 h-[13px] w-[8px] text-zinc-950 dark:text-white" />
             <p className="ml-0 text-sm text-zinc-950 dark:text-white">
               Back to the website
             </p>
           </div>
-        </a>
+        </Link>
         {children}
         <div className="absolute right-0 hidden h-full min-h-[100vh] xl:block xl:w-[50vw] 2xl:w-[44vw]">
           <div className="absolute flex h-full w-full flex-col items-end justify-center bg-zinc-950 dark:bg-zinc-900">

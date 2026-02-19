@@ -7,7 +7,10 @@ interface OpenContextType {
 }
 type UserDetails = { [x: string]: any } | null;
 
-export const OpenContext = createContext<OpenContextType>(undefined);
+export const OpenContext = createContext<OpenContextType>({
+  open: false,
+  setOpen: () => {}
+});
 export const UserContext = createContext<User | undefined | null>(undefined);
 export const UserDetailsContext = createContext<UserDetails | undefined | null>(
   undefined

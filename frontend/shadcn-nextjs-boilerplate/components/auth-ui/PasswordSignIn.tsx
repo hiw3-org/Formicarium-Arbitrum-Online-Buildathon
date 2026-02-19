@@ -6,6 +6,7 @@ import { handleRequest } from '@/utils/auth-helpers/client';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Input } from '../ui/input';
+import Link from 'next/link';
 
 // Define prop type with allowEmail boolean
 interface PasswordSignInProps {
@@ -17,12 +18,12 @@ export default function PasswordSignIn({
   allowEmail,
   redirectMethod
 }: PasswordSignInProps) {
-  const router = redirectMethod === 'client' ? useRouter() : null;
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true); // Disable the button while the request is being handled
-    await handleRequest(e, signInWithPassword, router);
+    await handleRequest(e, signInWithPassword, redirectMethod === 'client' ? router : null);
     setIsSubmitting(false);
   };
 
@@ -92,30 +93,30 @@ export default function PasswordSignIn({
         </div>
       </form>
       <p>
-        <a
-          href="/dashboard/signin/forgot_password"
+        <Link
+          href="/dashboard/signin/forgot_password/"
           className="font-medium text-zinc-950 dark:text-white text-sm"
         >
           Forgot your password?
-        </a>
+        </Link>
       </p>
       {allowEmail && (
         <p>
-          <a
-            href="/dashboard/signin/email_signin"
+          <Link
+            href="/dashboard/signin/email_signin/"
             className="font-medium text-zinc-950 dark:text-white text-sm"
           >
             Sign in via magic link
-          </a>
+          </Link>
         </p>
       )}
       <p>
-        <a
-          href="/dashboard/signin/signup"
+        <Link
+          href="/dashboard/signin/signup/"
           className="font-medium text-zinc-950 dark:text-white text-sm"
         >
-          Don't have an account? Sign up
-        </a>
+          Don&apos;t have an account? Sign up
+        </Link>
       </p>
     </div>
   );

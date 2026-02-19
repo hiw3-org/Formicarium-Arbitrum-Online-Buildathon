@@ -143,12 +143,12 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (!walletAddress) return;
         console.log("Fetching data for wallet address:", walletAddress);
-        fetchContractOwner().then(setContractOwner);
-        fetchPrinters().then(setProductionPrinters);
-        fetchOrders().then(setProductionOrders);
+        fetchContractOwner().then((owner) => setContractOwner(owner as string | null));
+        fetchPrinters().then((printers) => setProductionPrinters(printers));
+        fetchOrders(walletAddress).then((orders) => setProductionOrders(orders));
 
-        fetchBalanceETH(walletAddress).then(setBalanceETH);
-        fetchBalanceERC20(walletAddress).then(setBalanceERC20);
+        fetchBalanceETH(walletAddress).then((balance) => setBalanceETH(balance as bigint | null));
+        fetchBalanceERC20(walletAddress).then((balance) => setBalanceERC20(balance as bigint | null));
 
     }, [walletAddress]);
 

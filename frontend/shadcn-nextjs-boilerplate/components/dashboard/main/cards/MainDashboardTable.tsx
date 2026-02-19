@@ -45,7 +45,7 @@ function CheckTable(props: { tableData: any }) {
   let defaultData = tableData;
   const [globalFilter, setGlobalFilter] = React.useState('');
   const createPages = (count: number) => {
-    let arrPageCount = [];
+    let arrPageCount: number[] = [];
 
     for (let i = 1; i <= count; i++) {
       arrPageCount.push(i);

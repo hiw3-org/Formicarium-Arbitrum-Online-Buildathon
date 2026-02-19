@@ -29,7 +29,7 @@ export default function Navbar(props: { brandText: string }) {
                 setWalletAddress(accounts[0]); // Set wallet in context
 
                 const network = await provider.getNetwork();
-                if (network.chainId !== parseInt(BASE_SEPOLIA_CHAIN_ID, 16)) {
+                if (network.chainId !== BigInt(parseInt(BASE_SEPOLIA_CHAIN_ID, 16))) {
                     await switchToBaseSepolia();
                 }
             } catch (error) {

@@ -42,35 +42,19 @@ export default function Home(props: Props) {
                     <div className="grid grid-cols-2 gap-8 ">
                         {/* Left Column (Transparent) */}
                         <div className="bg-transparent md:col-span-1 p-0 rounded-lg shadow-md">
-                            <Chat responses={predefinedResponses}/>;
+                            <Chat />
                         </div>
 
                         {/* Right Column (Image & Buttons) */}
                         <div className="md:col-span-1 w-6/7 max-w-lg min-w-[400px]">
                             <div className="pb-5">
-                            <ApproveCard
-                                imageSrc={"/approve2DBackground.png"}
-                                onApprove={handleApprove}
-                                onReject={handleReject}
-                                text="Use chat to generate an image?"
-                            />
+                            <ApproveCard />
                             </div>
                             <div className="pb-5">
-                            <ApproveCard
-                                imageSrc={"/approveSTLBackground.png"}
-                                onApprove={handleApprove}
-                                onReject={handleReject}
-                                text="You need an image to generate a model?"
-                            />
+                            <ApproveCard />
                             </div>
                             <div className="pb-5">
-                            <OrderSummary
-                                onApprove={handleApprove}
-                                dimensions={[10, 20, 30]}
-                                quantity={5}
-                                price={100}
-                                fee={10}
-                            />
+                            <OrderSummary />
                             </div>
 
 

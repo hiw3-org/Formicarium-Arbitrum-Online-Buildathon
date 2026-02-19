@@ -32,6 +32,10 @@ export default function OrderSummary() {
             alert("Please define the printerID of your order");
             return;
         }
+        if (!walletAddress) {
+            alert("Please connect your wallet");
+            return;
+        }
         //CLC order duration
         placeOrder(walletAddress, orderID, printerID, orderPrice, orderPrice, orderDuration).then((result) => {
             if (result) {

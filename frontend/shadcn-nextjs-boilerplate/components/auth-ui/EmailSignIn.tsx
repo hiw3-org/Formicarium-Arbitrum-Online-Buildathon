@@ -19,12 +19,12 @@ export default function EmailSignIn({
   allowPassword,
   redirectMethod
 }: EmailSignInProps) {
-  const router = redirectMethod === 'client' ? useRouter() : null;
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true); // Disable the button while the request is being handled
-    await handleRequest(e, signInWithEmail, router);
+    await handleRequest(e, signInWithEmail, redirectMethod === 'client' ? router : null);
     setIsSubmitting(false);
   };
 
@@ -94,7 +94,7 @@ export default function EmailSignIn({
               href="/dashboard/signin/signup"
               className="font-medium text-sm dark:text-white"
             >
-              Don't have an account? Sign up
+              Don&apos;t have an account? Sign up
             </Link>
           </p>
         </>

@@ -20,6 +20,7 @@ import {
   HiOutlineArrowRightOnRectangle
 } from 'react-icons/hi2';
 import { createClient } from '@/utils/supabase/client';
+import Link from 'next/link';
 
 const supabase = createClient();
 export default function HeaderLinks(props: { [x: string]: any }) {
@@ -27,7 +28,7 @@ export default function HeaderLinks(props: { [x: string]: any }) {
   const user = useContext(UserContext);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const router = getRedirectMethod() === 'client' ? useRouter() : null;
+  const router = useRouter();
   const onOpen = () => {
     setOpen(false);
   };
@@ -40,7 +41,9 @@ export default function HeaderLinks(props: { [x: string]: any }) {
   const handleSignOut = async (e) => {
     e.preventDefault();
     supabase.auth.signOut();
-    router.push('/dashboard/signin');
+    if (getRedirectMethod() === 'client') {
+      router.push('/dashboard/signin');
+    }
   };
   if (!mounted) return null;
   return (
@@ -90,11 +93,11 @@ export default function HeaderLinks(props: { [x: string]: any }) {
               Help & Support
             </Button>
           </a>
-          <a target="blank" href="/#faqs">
+          <Link target="blank" href="/#faqs">
             <Button variant="outline" className="w-full">
               FAQs & More
             </Button>
-          </a>
+          </Link>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -105,16 +108,16 @@ export default function HeaderLinks(props: { [x: string]: any }) {
       >
         <HiOutlineArrowRightOnRectangle className="h-4 w-4 stroke-2 text-zinc-950 dark:text-white" />
       </Button>
-      <a className="w-full" href="/dashboard/settings">
+      <Link className="w-full" href="/dashboard/settings">
         <Avatar className="h-9 min-w-9 md:min-h-10 md:min-w-10">
           <AvatarImage src={user?.user_metadata.avatar_url} />
           <AvatarFallback className="font-bold">
             {user?.user_metadata.full_name
               ? `${user?.user_metadata.full_name[0]}`
-              : `${user?.email[0].toUpperCase()}`}
+              : user?.email ? `${user.email[0].toUpperCase()}` : 'U'}
           </AvatarFallback>
         </Avatar>
-      </a>
+      </Link>
     </div>
   );
 }

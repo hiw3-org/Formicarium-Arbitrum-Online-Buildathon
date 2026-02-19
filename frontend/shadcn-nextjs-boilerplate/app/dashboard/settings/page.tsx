@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { getUserDetails, getUser } from '@/utils/supabase/queries';
 
 export default async function SettingsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [user, userDetails] = await Promise.all([
     getUser(supabase),
     getUserDetails(supabase)

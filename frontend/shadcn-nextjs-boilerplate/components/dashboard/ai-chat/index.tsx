@@ -10,8 +10,8 @@ import {
   AccordionTrigger
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import Bgdark from '/img/dark/ai-chat/bg-image.png';
-import Bg from '/img/light/ai-chat/bg-image.png';
+// import Bgdark from '/img/dark/ai-chat/bg-image.png';
+// import Bg from '/img/light/ai-chat/bg-image.png';
 import { ChatBody, OpenAIModel } from '@/types/types';
 import { User } from '@supabase/supabase-js';
 import { useTheme } from 'next-themes';
@@ -126,13 +126,13 @@ export default function Chat(props: Props) {
       description="AI Generator"
     >
       <div className="relative flex w-full flex-col pt-[20px] md:pt-0">
-        <img
+        {/* <img
           width="340"
           height="181"
           src={theme === 'dark' ? Bgdark.src : Bg.src}
           className="absolute left-[20%] top-[50%] z-[0] w-[200px] translate-y-[-50%] md:left-[35%] lg:left-[38%] xl:left-[38%] xl:w-[350px] "
           alt=""
-        />
+        /> */}
         <div className="mx-auto flex min-h-[75vh] w-full max-w-[1000px] flex-col xl:min-h-[85vh]">
           {/* Model Change */}
           <div

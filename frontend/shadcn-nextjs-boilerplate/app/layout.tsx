@@ -18,8 +18,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <title>
-          Horizon UI Boilerplate - Launch your startup project 10X in a few
-          moments - The best NextJS Boilerplate (This is an example)
+          Formicarium - Autonomous 3D Printing Service
         </title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {/* <!--  Social tags   --> */}
@@ -80,7 +79,7 @@ export default function RootLayout({
             <Navbar brandText="formicarium"/>
             {/* Service Status Banner */}
             <div className="fixed top-16 left-0 right-0 z-40 bg-yellow-500 text-black px-6 py-3 text-center font-semibold shadow-lg">
-              ⚠️ Service is Currently Offline - Our autonomous 3D printers require human supervision and cannot be left unattended. We apologize for the inconvenience.
+              ⚠️ Service Currently Offline - Our autonomous 3D printers require human supervision and cannot be left unattended. We apologize for the inconvenience.
             </div>
             {/* Background applied to all pages */}
             <div className="relative w-screen min-h-screen bg-repeat bg-top pt-28"
