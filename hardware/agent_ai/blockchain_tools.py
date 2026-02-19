@@ -5,6 +5,10 @@ import json
 import asyncio
 from langchain.tools import tool
 import httpx
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+from agents.agent_ai.erc8004_tools import ERC8004Client, format_agent_endpoint
 
 load_dotenv()
 
@@ -272,6 +276,229 @@ async def listen_events():
 
         await asyncio.sleep(1)  # Avoid excessive polling
 
+
+# ============ ERC-8004 Integration Tools ============
+
+@tool("register_hardware_agent_erc8004", return_direct=True)
+def register_hardware_agent_erc8004(name: str, description: str, printer_address: str) -> str:
+    """
+    Register the hardware agent on ERC-8004 Identity Registry with the same printer address.
+    This should be done AFTER registering on the Formicarium contract.
+    
+    Args:
+        name: Agent name (e.g., "Formicarium Hardware Agent - Printer #1")
+        description: Agent description including printer capabilities
+        printer_address: The printer's Ethereum address (same as used in Formicarium)
+    """
+    try:
+        # Initialize ERC8004 client with the hardware agent's private key
+        client = ERC8004Client(private_key=private_key)
+        
+        # Verify that the agent address matches the printer address
+        if client.address.lower() != printer_address.lower():
+            return f"Error: Agent address {client.address} doesn't match printer address {printer_address}. Use the same private key!"
+        
+        # Define skills and capabilities
+        skills_list = [
+            "3D printing",
+            "FDM printing",
+            "multi-material",
+            "order fulfillment",
+            "quality control"
+        ]
+        
+        # Create endpoints
+        endpoints = [
+            format_agent_endpoint("agentWallet", client.address),
+            format_agent_endpoint("HTTP", f"http://localhost:8080/api/hardware", "1.0.0"),
+            format_agent_endpoint("FormiciariumPrinter", printer_address)
+        ]
+        
+        # Create registration JSON
+        registration_json = client.create_agent_registration_json(
+            name=name,
+            description=description,
+            skills=skills_list,
+            endpoints=endpoints,
+            agent_wallet=client.address,
+            supported_trust=["reputation"]
+        )
+        
+        # Register agent on ERC-8004
+        agent_id, tx_hash = client.register_agent(registration_json)
+        
+        return f"""
+Hardware agent registered on ERC-8004!
+Agent ID: {agent_id}
+Printer Address: {printer_address}
+Transaction: {tx_hash}
+Explorer: https://sepolia.basescan.org/tx/{tx_hash}
+
+IMPORTANT: Store this Agent ID for future feedback operations!
+"""
+        
+    except Exception as e:
+        return f"Failed to register hardware agent on ERC-8004: {str(e)}"
+
+
+@tool("sign_feedback_authorization", return_direct=True)
+def sign_feedback_authorization(agent_id: int, customer_address: str, expiry_hours: int = 168) -> str:
+    """
+    Sign a feedback authorization for a customer after completing their order.
+    This allows the customer to submit feedback to the ERC-8004 Reputation Registry.
+    
+    Args:
+        agent_id: Hardware agent's ERC-8004 agent ID
+        customer_address: Customer's Ethereum address
+        expiry_hours: Hours until authorization expires (default 168 = 1 week)
+    """
+    try:
+        # Initialize ERC8004 client
+        client = ERC8004Client(private_key=private_key)
+        
+        # Get the last feedback index for this customer
+        last_index = client.reputation_registry.functions.getLastIndex(
+            agent_id,
+            web3.to_checksum_address(customer_address)
+        ).call()
+        
+        # Create feedback authorization for next feedback (last_index + 1)
+        feedback_auth = client.create_feedback_auth(
+            agent_id=agent_id,
+            client_address=customer_address,
+            index_limit=last_index + 1,
+            expiry_hours=expiry_hours
+        )
+        
+        # Convert to hex for easy storage/transmission
+        feedback_auth_hex = "0x" + feedback_auth.hex()
+        
+        return f"""
+Feedback authorization signed!
+Agent ID: {agent_id}
+Customer: {customer_address}
+Index Limit: {last_index + 1}
+Expires in: {expiry_hours} hours
+Authorization (hex): {feedback_auth_hex}
+
+Give this authorization to the customer so they can submit feedback on ERC-8004!
+"""
+        
+    except Exception as e:
+        return f"Failed to sign feedback authorization: {str(e)}"
+
+
+@tool("get_hardware_agent_feedback", return_direct=True) 
+def get_hardware_agent_feedback(agent_id: int, customer_address: str, feedback_index: int = 0) -> str:
+    """
+    Retrieve feedback submitted for the hardware agent from ERC-8004 Reputation Registry.
+    
+    Args:
+        agent_id: Hardware agent's ERC-8004 agent ID
+        customer_address: Customer's Ethereum address
+        feedback_index: Feedback index (default 0 for first feedback)
+    """
+    try:
+        client = ERC8004Client()
+        feedback = client.get_agent_feedback(agent_id, customer_address, feedback_index)
+        
+        if "error" in feedback:
+            return f"No feedback found or error: {feedback['error']}"
+        
+        return f"""
+Feedback for Agent ID {agent_id} from {customer_address} (index {feedback_index}):
+Score: {feedback['score']}/100
+Tag 1: {feedback['tag1'].hex()}
+Tag 2: {feedback['tag2'].hex()}
+Revoked: {feedback['is_revoked']}
+"""
+        
+    except Exception as e:
+        return f"Failed to retrieve feedback: {str(e)}"
+
+
+@tool("submit_customer_feedback", return_direct=True)
+def submit_customer_feedback(
+    customer_private_key: str,
+    agent_id: int, 
+    score: int,
+    feedback_auth_hex: str,
+    tag1: str = "",
+    tag2: str = "",
+    file_uri: str = "",
+    file_hash_hex: str = ""
+) -> str:
+    """
+    Submit feedback to ERC-8004 Reputation Registry as a customer.
+    The hardware agent must first provide you with a signed feedback authorization.
+    
+    Args:
+        customer_private_key: Customer's private key
+        agent_id: Hardware agent's ERC-8004 agent ID
+        score: Score 0-100
+        feedback_auth_hex: Feedback authorization from hardware agent (hex string starting with 0x)
+        tag1: Optional tag (e.g., "quality")
+        tag2: Optional tag (e.g., "speed")
+        file_uri: Optional IPFS/HTTP URI with proof/photos
+        file_hash_hex: Optional 32-byte file hash (hex string)
+    """
+    try:
+        # Convert feedback auth from hex
+        if not feedback_auth_hex.startswith("0x"):
+            return "feedback_auth_hex must start with 0x"
+        
+        feedback_auth = bytes.fromhex(feedback_auth_hex[2:])
+        
+        # Prepare file hash if provided
+        file_hash_bytes = None
+        if file_hash_hex:
+            fh = file_hash_hex[2:] if file_hash_hex.startswith("0x") else file_hash_hex
+            if len(fh) != 64:
+                return "file_hash_hex must be 32 bytes (64 hex chars)"
+            file_hash_bytes = bytes.fromhex(fh)
+        
+        # Initialize client with customer's key
+        client = ERC8004Client(private_key=customer_private_key)
+        
+        # Submit feedback
+        tx_hash = client.submit_feedback(
+            agent_id=agent_id,
+            score=score,
+            feedback_auth=feedback_auth,
+            tag1=tag1,
+            tag2=tag2,
+            file_uri=file_uri,
+            file_hash=file_hash_bytes
+        )
+        
+        return f"""
+Feedback submitted successfully!
+Agent ID: {agent_id}
+Score: {score}/100
+Transaction: {tx_hash}
+Explorer: https://sepolia.basescan.org/tx/{tx_hash}
+
+Your feedback is now recorded on the ERC-8004 Reputation Registry!
+"""
+        
+    except Exception as e:
+        return f"Failed to submit feedback: {str(e)}"
+
+
+@tool("get_erc8004_hardware_agent_info", return_direct=True)
+def get_erc8004_hardware_agent_info(agent_id: int) -> str:
+    """
+    Get information about the hardware agent from ERC-8004 Identity Registry.
+    
+    Args:
+        agent_id: The ERC-8004 agent ID to query
+    """
+    try:
+        client = ERC8004Client()
+        info = client.get_agent_info(agent_id)
+        return json.dumps(info, indent=2)
+    except Exception as e:
+        return f"Failed to get agent info: {str(e)}"
 
 
 # # Run Listener

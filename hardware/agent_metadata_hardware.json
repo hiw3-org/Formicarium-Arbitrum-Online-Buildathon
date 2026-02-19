@@ -1,0 +1,54 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Formicarium Hardware Agent - 3D Printer",
+  "description": "Autonomous 3D printing agent managing order fulfillment on Formicarium marketplace. Controls FDM multi-material printer, handles quality control, and provides automated feedback authentication for completed orders. Integrated with OctoPrint for real-time print monitoring.",
+  "image": "",
+  "endpoints": [
+    {
+      "name": "HTTP",
+      "endpoint": "http://localhost:8080/api/hardware",
+      "version": "1.0.0"
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:84532:PRINTER_ADDRESS_HERE"
+    },
+    {
+      "name": "FormiciariumPrinter",
+      "endpoint": "PRINTER_ADDRESS_HERE",
+      "version": "1.0.0"
+    },
+    {
+      "name": "OctoPrint",
+      "endpoint": "http://localhost:5000",
+      "version": "1.8.0"
+    }
+  ],
+  "registrations": [],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "skills": [
+    "3D printing",
+    "FDM printing",
+    "multi-material printing",
+    "order fulfillment",
+    "quality control",
+    "print monitoring",
+    "automated feedback"
+  ],
+  "printerSpecs": {
+    "technology": "FDM",
+    "materials": ["PLA", "PETG", "TPU"],
+    "multiMaterial": true,
+    "buildVolume": "250mm x 210mm x 200mm",
+    "layerResolution": "0.1-0.3mm",
+    "nozzleDiameter": "0.4mm"
+  },
+  "capabilities": {
+    "autoOrderProcessing": true,
+    "realTimeMonitoring": true,
+    "qualityInspection": true,
+    "feedbackAuthentication": true
+  }
+}

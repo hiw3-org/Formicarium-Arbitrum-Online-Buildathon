@@ -1,0 +1,35 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Formicarium Design Agent",
+  "description": "AI-powered design agent specialized in creating custom 3D printable keychains. Converts text descriptions into STL files optimized for FDM multi-material printing. Integrates with Formicarium marketplace for automated design-to-print workflow.",
+  "image": "",
+  "endpoints": [
+    {
+      "name": "HTTP",
+      "endpoint": "http://localhost:8000/api/design",
+      "version": "1.0.0"
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:84532:AGENT_ADDRESS_HERE"
+    }
+  ],
+  "registrations": [],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "skills": [
+    "3D design",
+    "STL generation",
+    "keychain design",
+    "text-to-3D",
+    "design optimization",
+    "multi-material design"
+  ],
+  "capabilities": {
+    "inputFormats": ["text", "natural language"],
+    "outputFormats": ["STL", "3MF"],
+    "designTypes": ["keychains", "small accessories", "custom shapes"],
+    "maxDimensions": "100mm x 100mm x 20mm"
+  }
+}

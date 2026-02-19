@@ -7,6 +7,7 @@ from langchain.tools import tool
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 import agents.agent_ai.config as config
+from agents.agent_ai.erc8004_tools import ERC8004Client, format_agent_endpoint
 
 # Load the ABI from the contract's compiled JSON file
 with open("/home/luka/projects/formicarium/blockchain/artifacts/contracts/Formicarium.sol/Formicarium.json") as abi_file:
@@ -188,7 +189,64 @@ def transfer_funds_provider(order_id: str) -> str:
     except Exception as e:
         return f"Failed to transfer funds: {str(e)}"
 
+@tool("register_on_erc8004", return_direct=True)
+def register_on_erc8004(name: str, description: str, skills: str) -> str:
+    """
+    Register the design agent on ERC-8004 Identity Registry.
+    
+    Args:
+        name: Agent name (e.g., "Formicarium Design Agent")
+        description: Agent description
+        skills: Comma-separated skills (e.g., "3D design,STL generation,keychain design")
+    """
+    try:
+        # Get private key from config or environment
+        private_key = os.getenv("AGENT_PRIVATE_KEY") or config.WALLET_PRIVATE_KEY
+        
+        # Initialize ERC8004 client
+        client = ERC8004Client(private_key=private_key)
+        
+        # Parse skills
+        skills_list = [s.strip() for s in skills.split(",")]
+        
+        # Create endpoints (you can customize these)
+        endpoints = [
+            format_agent_endpoint("agentWallet", client.address),
+            format_agent_endpoint("HTTP", "http://localhost:8000/api/design", "1.0.0")
+        ]
+        
+        # Create registration JSON
+        registration_json = client.create_agent_registration_json(
+            name=name,
+            description=description,
+            skills=skills_list,
+            endpoints=endpoints,
+            agent_wallet=client.address,
+            supported_trust=["reputation"]
+        )
+        
+        # Register agent
+        agent_id, tx_hash = client.register_agent(registration_json)
+        
+        return f"Design agent registered on ERC-8004!\nAgent ID: {agent_id}\nTransaction: {tx_hash}\nExplorer: https://sepolia.basescan.org/tx/{tx_hash}"
+        
+    except Exception as e:
+        return f"Failed to register on ERC-8004: {str(e)}"
 
+@tool("get_erc8004_agent_info", return_direct=True)
+def get_erc8004_agent_info(agent_id: int) -> str:
+    """
+    Get information about an ERC-8004 registered agent.
+    
+    Args:
+        agent_id: The agent ID to query
+    """
+    try:
+        client = ERC8004Client()
+        info = client.get_agent_info(agent_id)
+        return json.dumps(info, indent=2)
+    except Exception as e:
+        return f"Failed to get agent info: {str(e)}"
 
 if __name__ == "__main__":
     print(get_all_printers.run(""))
