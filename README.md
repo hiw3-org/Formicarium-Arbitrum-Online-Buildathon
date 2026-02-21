@@ -12,17 +12,17 @@ Formicarium is a decentralized platform where an AI agent coordinates a fleet of
 
 | Contract | Address |
 |---|---|
-| `Formicarium` | `0xe89174fF9b99675eE0bE93b9d57722CF5c4F054d` |
-| `ReverseAuction` | `0xD66896E2DC3eDDD32d1C1523f08cB79175031E0C` |
+| `Formicarium` | [0xe89174fF9b99675eE0bE93b9d57722CF5c4F054d](https://arbiscan.io/address/0xe89174fF9b99675eE0bE93b9d57722CF5c4F054d) |
+| `ReverseAuction` | [0xD66896E2DC3eDDD32d1C1523f08cB79175031E0C](https://arbiscan.io/address/0xD66896E2DC3eDDD32d1C1523f08cB79175031E0C) |
 
-**Arbitrum Sepolia (testnet):**
+<!-- **Arbitrum Sepolia (testnet):**
 
 | Contract | Address |
 |---|---|
 | `Formicarium` | `TODO with new one` |
 | `ERC20 (mock)` | `TODO with new one` |
 
----
+--- -->
 
 ## Features
 
