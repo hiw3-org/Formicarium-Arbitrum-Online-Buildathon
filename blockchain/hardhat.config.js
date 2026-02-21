@@ -42,5 +42,10 @@ export default {
       accounts: [process.env.PRIVATE_KEY],
       chainId: 421614, // Arbitrum Sepolia chain ID
     },
+    arbitrumMain: {
+      url: `https://arb1.arbitrum.io/rpc`, // Arbitrum Mainnet RPC
+      accounts: [process.env.PRIVATE_KEY_MAIN],
+      chainId: 42161, // Arbitrum Mainnet chain ID
+    },
   },
 };
