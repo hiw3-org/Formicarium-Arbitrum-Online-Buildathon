@@ -14,6 +14,7 @@ const MainModule = buildModule("MainModule", (m) => {
   console.log(`Using IdentityRegistry at:   ${identityRegistry}`);
   console.log(`Using ReputationRegistry at: ${reputationRegistry}`);
 
+
   // Legacy order-book contract
   const formicarium = m.contract("Formicarium", [usdc]);
 
