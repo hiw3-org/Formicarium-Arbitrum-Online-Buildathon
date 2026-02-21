@@ -193,7 +193,7 @@ contract Formicarium {
 
         for (uint256 i = 0; i < length; i++) {
             address orderId = allOrders[i];
-            if (orders[orderId].isCompletedProvider || orders[orderId].expirationTime < block.timestamp) {
+            if (!orders[orderId].isCompletedProvider && orders[orderId].expirationTime < block.timestamp) {
                 delete orders[orderId]; // Free storage
             } else {
                 allOrders[writeIndex++] = orderId;

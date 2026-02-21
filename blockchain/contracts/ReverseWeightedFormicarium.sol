@@ -114,7 +114,7 @@ contract ReverseAuction is ReentrancyGuard {
         uint256 amount;
         uint256 timestamp;
         uint256 reputation;  // ERC-8004 reputation score at bid time (0-100)
-        uint256 score;       // Weighted score: reputation + price competitiveness (0-10000)
+        uint256 score;       // Weighted score: reputation + price competitiveness (0-100)
     }
 
     // ============ CONSTANTS ============
@@ -419,6 +419,7 @@ contract ReverseAuction is ReentrancyGuard {
         if (auction.buyer == address(0)) revert AuctionNotFound();
         if (auction.state != AuctionState.BIDDING) revert AuctionNotInState(AuctionState.BIDDING, auction.state);
         if (block.timestamp > auction.auctionStartTime + auction.auctionDuration) revert AuctionNotInState(AuctionState.BIDDING, auction.state);
+        if (msg.sender == auction.buyer) revert NotAuthorized();
         if (!isEligibleAgent[auctionId][agentId]) revert AgentNotEligible();
         if (bidAmount == 0) revert InvalidMaxPrice();
         if (bidAmount > auction.maxPrice) revert BidTooHigh();
