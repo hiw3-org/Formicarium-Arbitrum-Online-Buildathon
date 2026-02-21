@@ -64,18 +64,7 @@ The reverse auction contract with full ERC-8004 reputation integration.
 
 ## Architecture
 
-```
-┌─────────────────┐     ┌──────────────────┐     ┌────────────────────┐
-│   Next.js UI    │────▶│   Agents API     │────▶│  Blockchain (Arb)  │
-│  (port 3000)    │     │  FastAPI :8000   │     │  ReverseAuction    │
-└─────────────────┘     └──────────────────┘     │  Formicarium       │
-                                │                └────────────────────┘
-                                ▼
-                        ┌──────────────────┐     ┌────────────────────┐
-                        │  Hardware API    │────▶│  3D Printer        │
-                        │  FastAPI :8080   │     │  (OctoPrint)       │
-                        └──────────────────┘     └────────────────────┘
-```
+![Formicarium Logo](assets/architecture.svg)
 
 ---
 
