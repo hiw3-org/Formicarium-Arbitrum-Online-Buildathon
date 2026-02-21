@@ -38,14 +38,14 @@ export default {
       chainId: 8453, // Base Mainnet chain ID
     },
     arbitrumSepolia: {
-      url: `https://sepolia-rollup.arbitrum.io/rpc`, // Arbitrum Sepolia RPC
+      url: `https://arbitrum-sepolia-rpc.publicnode.com`, // Arbitrum Sepolia RPC
       accounts: [process.env.PRIVATE_KEY],
       chainId: 421614, // Arbitrum Sepolia chain ID
     },
-    arbitrumMain: {
-      url: `https://arb1.arbitrum.io/rpc`, // Arbitrum Mainnet RPC
+    arbitrumOne: {
+      url: process.env.ARBITRUM_MAIN_RPC || "https://arbitrum-one.publicnode.com",
       accounts: [process.env.PRIVATE_KEY_MAIN],
-      chainId: 42161, // Arbitrum Mainnet chain ID
+      chainId: 42161,
     },
   },
 };

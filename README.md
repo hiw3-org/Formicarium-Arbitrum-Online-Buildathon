@@ -12,8 +12,8 @@ Formicarium is a decentralized platform where an AI agent coordinates a fleet of
 
 | Contract | Address |
 |---|---|
-| `Formicarium` | `0xC6CF9FA1624eD0B78fd3a6449f66eB3435a7Fa8e` |
-| `ReverseAuction` | `0x81b737B20aB88fB4B33db282946Db5a3B16930d4` |
+| `Formicarium` | `0xe89174fF9b99675eE0bE93b9d57722CF5c4F054d` |
+| `ReverseAuction` | `0xD66896E2DC3eDDD32d1C1523f08cB79175031E0C` |
 
 **Arbitrum Sepolia (testnet):**
 
