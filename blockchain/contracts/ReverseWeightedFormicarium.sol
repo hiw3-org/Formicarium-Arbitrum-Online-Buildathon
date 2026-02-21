@@ -430,14 +430,17 @@ contract ReverseAuction is ReentrancyGuard {
 
         // Fetch live reputation from ERC-8004 Reputation Registry.
         // Agents with no feedback history default to neutral score of 50.
+        // try-catch guards against registries that revert on zero-feedback agents.
         address[] memory emptyAddresses = new address[](0);
-        (uint256 feedbackCount, uint256 averageScore) = REPUTATION_REGISTRY.getSummary(
+        uint256 reputation = 50;
+        try REPUTATION_REGISTRY.getSummary(
             agentId,
             emptyAddresses,
             bytes32(0),
             bytes32(0)
-        );
-        uint256 reputation = feedbackCount > 0 ? averageScore : 50;
+        ) returns (uint256 feedbackCount, uint256 averageScore) {
+            if (feedbackCount > 0) reputation = averageScore;
+        } catch { /* keep default of 50 */ }
 
         uint256 score = _calculateScore(reputation, bidAmount, auction.maxPrice, auction.reputationWeight);
 
